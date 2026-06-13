@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Project Manager</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; background: #f9fafb; color: #111827; }
+  .dashboard { display: grid; grid-template-columns: 250px 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
+  .sidebar { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .main-content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+  .stat-card { background: #f3f4f6; padding: 15px; border-radius: 8px; flex: 1; text-align: center; }
+  .stat-card h3 { margin: 0 0 10px 0; font-size: 14px; color: #4b5563; }
+  .stat-card p { margin: 0; font-size: 24px; font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+  th { background: #f9fafb; font-weight: 600; }
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
+  .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; }
+  button { background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+  button:hover { background: #1d4ed8; }
+  .badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .priority-high { background: #fee2e2; color: #991b1b; }
+  .priority-medium { background: #fef3c7; color: #92400e; }
+  .priority-low { background: #d1fae5; color: #065f46; }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <div class="sidebar">
+    <h3>Views</h3>
+    <ul style="list-style: none; padding: 0; margin-bottom: 30px;">
+      <li style="margin-bottom: 10px; cursor: pointer;">▤ All Projects</li>
+      <li style="margin-bottom: 10px; cursor: pointer;">◉ In Progress</li>
+      <li style="margin-bottom: 10px; cursor: pointer;">◌ Waiting</li>
+      <li style="margin-bottom: 10px; cursor: pointer;">✓ Done</li>
+    </ul>
+    <h3>Focus</h3>
+    <ul style="list-style: none; padding: 0;">
+      <li style="margin-bottom: 10px; cursor: pointer;">↑ High Priority</li>
+      <li style="margin-bottom: 10px; cursor: pointer;">! Overdue</li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <h2 style="margin-top: 0;">All Projects</h2>
+    <p style="color: #6b7280; margin-bottom: 30px;">Your single source of truth. No more chaos.</p>
+
+    <div class="stats">
+      <div class="stat-card"><h3>Total</h3><p id="stat-total">0</p></div>
+      <div class="stat-card"><h3>In Progress</h3><p id="stat-progress">0</p></div>
+      <div class="stat-card"><h3>Completed</h3><p id="stat-completed">0</p></div>
+    </div>
+
+    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+      <h3 style="margin-top: 0;">+ Add New Project</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="p-name" placeholder="E.g., Website Redesign">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="p-status">
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Waiting">Waiting</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="p-priority">
+            <option value="High">High</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Budget (₹)</label>
+          <input type="number" id="p-budget" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Deadline</label>
+          <input type="date" id="p-deadline">
+        </div>
+        <div class="form-group">
+          <label>Next Action</label>
+          <input type="text" id="p-action" placeholder="What's the next step?">
+        </div>
+      </div>
+      <button onclick="addProject()" style="margin-top: 10px;">Save Project</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Budget</th>
+          <th>Deadline</th>
+          <th>Next Action</th>
+        </tr>
+      </thead>
+      <tbody id="project-list">
+        <!-- New projects render here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let projects = [];
+
+  function addProject() {
+    const name = document.getElementById('p-name').value;
+    const status = document.getElementById('p-status').value;
+    const priority = document.getElementById('p-priority').value;
+    const budget = document.getElementById('p-budget').value;
+    const deadline = document.getElementById('p-deadline').value;
+    const action = document.getElementById('p-action').value;
+
+    if (!name) {
+      alert("Please enter a project name");
+      return;
+    }
+
+    projects.push({ name, status, priority, budget, deadline, action });
+    updateUI();
+    
+    // Clear the form
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-budget').value = '';
+    document.getElementById('p-action').value = '';
+    document.getElementById('p-deadline').value = '';
+  }
+
+  function updateUI() {
+    const tbody = document.getElementById('project-list');
+    tbody.innerHTML = '';
+    
+    let inProgressCount = 0;
+    let completedCount = 0;
+
+    projects.forEach(p => {
+      if (p.status === 'In Progress') inProgressCount++;
+      if (p.status === 'Done') completedCount++;
+
+      const priorityClass = p.priority === 'High' ? 'priority-high' : 
+                            p.priority === 'Medium' ? 'priority-medium' : 'priority-low';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${p.name}</strong></td>
+        <td>${p.status}</td>
+        <td><span class="badge ${priorityClass}">${p.priority}</span></td>
+        <td>₹${p.budget || '0'}</td>
+        <td>${p.deadline || '-'}</td>
+        <td>${p.action || '-'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('stat-total').innerText = projects.length;
+    document.getElementById('stat-progress').innerText = inProgressCount;
+    document.getElementById('stat-completed').innerText = completedCount;
+  }
+</script>
+
+</body>
+</html>
